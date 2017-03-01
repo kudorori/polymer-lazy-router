@@ -69,6 +69,10 @@
 			lazyRouterReduxBehavior
 		],
 		properties: {
+			stop:{
+				type: Boolean,
+				value: false
+			},
 			active:{
 				type: Boolean,
 				value: false,
@@ -78,7 +82,7 @@
 				type: String,
 				notify: true
 			},
-			__wait:{
+			wait:{
 				type:Boolean,
 				value:true
 			}
@@ -98,13 +102,13 @@
 			}
 		},
 		observers:[
-			"__hashChanged(hash,__wait)"
+			"__hashChanged(hash,wait,stop)"
 		],
 		created:function(){
 			this.dispatch("created",this);
 		},
-		__hashChanged:function(h,w){
-			if(!w){
+		__hashChanged:function(h,w,s){
+			if(!w&&!s){
 				var routes = Polymer.dom(this).querySelectorAll("lazy-route");
 				var target = null;
 				routes.forEach(function(route){
@@ -136,11 +140,11 @@
 			},200);
 		},
 		__observerContent:function(e){
-			this.__wait=true;
+			this.wait=true;
 			var eles = e.addedNodes.filter(function(node) {
 				return (node.nodeType === Node.ELEMENT_NODE)
 			});
-			this.__wait=false;
+			this.wait=false;
 		}
 	
 	});
