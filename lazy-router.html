@@ -1,0 +1,128 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-selector/iron-selector.html">
+<link rel="import" href="../iron-location/iron-location.html">
+<!--
+`lazy-router`
+
+
+@demo demo/index.html 
+-->
+<!--  -->
+<dom-module id="lazy-router">
+	<template>
+		<iron-location hash="{{hash}}" ></iron-location>
+		<iron-selector
+			selected="{{selected}}"
+			attr-for-selected="route">
+			<content id="content"></content>
+		</iron-selector>
+	</template>
+	<script>
+	Polymer({
+	
+		is: 'lazy-router',
+		
+		properties: {
+			active:{
+				type: Boolean,
+				value: false,
+				notify: true
+			},
+			selected:{
+				type: String,
+				notify: true
+			},
+			__wait:{
+				type:Boolean,
+				value:true
+			}
+		},
+		observers:[
+			"__hashChanged(hash,__wait)"
+		],
+		__hashChanged:function(h,w){
+			if(!w){
+				var routes = Polymer.dom(this).querySelectorAll("lazy-route");
+				var target = null;
+				routes.forEach(function(route){
+					if(route.routeRegex.test(h)){
+						target = route;
+					}
+				}.bind(this));
+				
+				if(target!=null){
+					this.selected = target.route;
+					this.params = target.getParams(h);
+					this.active=true;
+					this.fire("active",{
+						route: this.seleced,
+						params: this.params
+					});
+				}else if(this.active){
+					this.active=false;
+					this.fire("deactive");
+				}
+			}
+		},
+		ready:function(){
+			Polymer.dom(this.$.content).observeNodes(this.__observerContent.bind(this));
+		},
+		__observerContent:function(e){
+			this.__wait=true;
+			var eles = e.addedNodes.filter(function(node) {
+				return (node.nodeType === Node.ELEMENT_NODE)
+			});
+			this.__wait=false;
+		}
+	
+	});
+	</script>
+</dom-module>
+
+
+<dom-module id="lazy-route">
+	<template>
+	</template>
+	<script>
+		Polymer({
+			is: "lazy-route",
+			properties:{
+				route:{
+					type: String
+				},
+				routeRegex:{
+					type: RegExp,
+					computed:"__bindRegExp(route)"
+				},
+				parameters:{
+					type: Object,
+					computed:"__bindParam(route)"
+				}
+			},
+			__bindRegExp:function(route){
+				return new RegExp(route.replace(/:[\w]*/g, "([\\w]*)"));
+			},
+			__bindParam:function(route){
+				var result = [];
+				var arr = route.match(/:(\w*)/g);
+				if(arr!=null){
+					result = route.match(/:\w*/g).map(function(item){
+						return item.replace(":", "");
+					});
+				}
+				return result;
+			},
+			getParams:function(hash){
+				var arr = hash.match(this.routeRegex);
+				var that = this;
+				var result = {};
+				if(that.parameters.length==arr.length-1){						
+					that.parameters.forEach(function(key,i){
+						result[key]=arr[arr.index+parseInt(i)];
+					});
+				}
+				return result;
+			}
+		})
+	</script>
+</dom-module>

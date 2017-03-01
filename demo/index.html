@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+
+    <title>lazy-router demo</title>
+
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+
+    <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
+    <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
+    <link rel="import" href="../lazy-router.html">
+
+    <style is="custom-style" include="demo-pages-shared-styles">
+    </style>
+  </head>
+  <body>
+    <div class="vertical-section-container centered">
+      <h3>Basic lazy-router demo</h3>
+      <demo-snippet>
+        <template>
+          <lazy-router>
+          	<lazy-route route="/home$"></lazy-route>
+          	<lazy-route route="/home1"></lazy-route>
+          	<lazy-route route="/home2"></lazy-route>
+          	<lazy-route route="/home3"></lazy-route>
+          	<lazy-route route="/home/:id/:id2"></lazy-route>
+          	<lazy-route route="/news/:id"></lazy-route>
+          </lazy-router>
+        </template>
+      </demo-snippet>
+    </div>
+  </body>
+</html>
