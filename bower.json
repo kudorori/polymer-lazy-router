@@ -4,7 +4,8 @@
   "dependencies": {
     "polymer": "Polymer/polymer#^1.4.0",
     "iron-selector": "^1.5.2",
-    "iron-location": "^0.8.11"
+    "iron-location": "^0.8.11",
+    "polymer-redux": "^0.4.0"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",

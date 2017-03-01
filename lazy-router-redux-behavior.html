@@ -1,0 +1,36 @@
+<link rel="import" href="../polymer-redux/polymer-redux.html" />
+<script src="node_modules/redux/dist/redux.js"></script>
+
+<script>
+	
+	var reducer = function(state,action){
+		console.log(state,action);
+		if(!state){
+			return {
+				route_active:[],
+				router_ready:[],
+				router_created:[]
+			}
+		}
+		switch(action.type){
+			case "ROUTE_ACTIVE":
+				if(action.active){
+					state.route_active.push(action.route);
+				}else{
+					var i = state.route_active.indexOf(action.route);
+					state.route_active.splice(i,1);
+				}
+				break;
+			case "ROUTER_CREATED":
+				state.router_created.push(action.value);
+				break;
+			case "ROUTER_READY":
+				state.router_ready.push(action.value);
+				break;
+		}
+		return state;
+	}
+	
+	var store = Redux.createStore(reducer);
+	var lazyRouterReduxBehavior=PolymerRedux(store);
+</script>
