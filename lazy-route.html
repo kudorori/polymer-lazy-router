@@ -1,0 +1,119 @@
+<dom-module id="lazy-route">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+    </style>
+    
+    <slot id="_slot"></slot>
+  </template>
+    
+  <script>
+    class lazyRoute extends Polymer.Element {
+      static get is(){ return 'lazy-route' }
+      
+      static get properties() {
+        return {
+          prefix:{
+            type: String,
+            reflectToAttribute: true
+          },
+          pattern:{
+            type: String,
+            reflectToAttribute: true
+          },
+          active:{
+            type: Boolean,
+            observer: "_activeChanged"
+          },
+          component:{
+            type: String,
+            observer: "_componentChanged"
+          },
+          _component:{
+            type: Object
+          }
+        };
+      }
+      static get observers() {
+        return [
+//           "_renderRouter(prefix, pattern)"
+        ];
+      }
+      
+      connectedCallback(){
+        super.connectedCallback();
+      }
+      
+      _componentChanged(str){
+        this._component = document.createElement(str);
+        this._component.appendChild(this.$._slot);
+      }
+      
+      _activeChanged(act){
+        if(this.component != undefined){
+          if(act){
+            this.root.appendChild(this._component);
+          }else{
+            this.root.removeChild(this._component);
+          }
+        }
+      }
+      
+      _patternToMatchRegex(pattern){
+        return new RegExp(pattern.replace(/:[\w]*/g, "([\\w]*)"));
+      }
+      
+      _patternToParameters(pattern){
+        var result = [];
+				var arr = pattern.match(/:(\w*)/g);
+				if(arr!=null){
+					result = pattern.match(/:\w*/g).map(function(item){
+						return item.replace(":", "");
+					});
+				}
+				return result;
+      }
+      
+      setPrefix(prefix){
+        var that = this;
+        var pattern = this.pattern;
+        return new Promise(function(resolve, reject){
+          var routers = Array.from(that.querySelectorAll(":scope > lazy-router"));
+          Promise.all(routers.map(function(node){
+            return node.setPrefix(prefix + pattern);
+          })).then(function(){
+            that.prefix = prefix;
+            resolve();
+          })
+        })
+      }
+      
+      match(path){
+        var pattern = this.prefix+this.pattern;
+        var reg = this._patternToMatchRegex(pattern);
+        var result = reg.test(path);
+        if(result){
+          var paramsValues = Array.from(path.match(reg)).slice(1);
+          var paramsNames = this._patternToParameters(pattern);
+          if(paramsNames.length == paramsValues.length){
+            var params = {};
+            paramsNames.forEach(function(name,index) {
+              params[name] = paramsValues[index];
+            });
+            this._component.params = params;
+          }else{
+            result = false;
+          }
+        }
+        return result;
+      }
+      
+      
+      
+    }
+
+    window.customElements.define(lazyRoute.is, lazyRoute);
+  </script>
+</dom-module>

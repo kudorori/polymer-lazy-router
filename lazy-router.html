@@ -1,227 +1,103 @@
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../iron-selector/iron-selector.html">
-<link rel="import" href="../iron-location/iron-location.html">
-<link rel="import" href="lazy-router-redux-behavior.html">
-
-<dom-module id="lazy-router-config">
-	<template>
-		<iron-location hash="{{hash}}"></iron-location>
-	</template>
-	<script>
-		Polymer({
-			is: "lazy-router-config",
-			behaviors:[
-				lazyRouterReduxBehavior
-			],
-			properties:{
-				prefix:{
-					type: String,
-					value: "!"
-				},
-				defaultTo:{
-					type: Object
-				},
-				created_nums:{
-					type: Number,
-					statePath:"router_created.length"
-				},
-				ready_nums:{
-					statePath:"router_ready.length"
-				},
-				active_nums:{
-					statePath:"route_active.length"
-				}
-			},
-			observers:[
-				"__check(prefix,defaultTo,created_nums,ready_nums,active_nums)"
-			],
-			__check:function(prefix,d,c,r,a){
-				if(c!=r){
-					return;
-				}
-				if(a==0){
-					this.hash=prefix+d;
-				}
-			}
-		})
-	</script>
-</dom-module>
+<link rel="import" href="./lazy-route.html">
+<link rel="import" href="../iron-pages/iron-pages.html">
 
 <!--
 `lazy-router`
-@demo demo/index.html 
+
+
+@demo demo/index.html
 -->
-<!--  -->
+
 <dom-module id="lazy-router">
-	<template>
-		<iron-location hash="{{hash}}" ></iron-location>
-		<iron-selector
-			selected$="{{selected}}"
-			selected-attribute="active"
-			attr-for-selected="route">
-			<content id="content"></content>
-		</iron-selector>
-	</template>
-	<script>
-	Polymer({
-		is: 'lazy-router',
-		behaviors:[
-			lazyRouterReduxBehavior
-		],
-		properties: {
-			stop:{
-				type: Boolean,
-				value: false
-			},
-			active:{
-				type: Boolean,
-				value: false,
-				notify: true
-			},
-			selected:{
-				type: String,
-				notify: true
-			},
-			wait:{
-				type:Boolean,
-				value:true
-			}
-		},
-		actions:{
-			created:function(event){
-				return {
-					type: "ROUTER_CREATED",
-					value: event
-				}
-			},
-			ready:function(event){
-				return {
-					type: "ROUTER_READY",
-					value: event
-				}
-			}
-		},
-		observers:[
-			"__hashChanged(hash,wait,stop)"
-		],
-		created:function(){
-			this.dispatch("created",this);
-		},
-		__hashChanged:function(h,w,s){
-			if(!w&&!s){
-				var routes = Polymer.dom(this).querySelectorAll("lazy-route");
-				var target = null;
-				routes.forEach(function(route){
-					if(route.routeRegex.test(h)){
-						target = route;
-					}
-				}.bind(this));
-				
-				if(target!=null){
-					this.selected = target.route;
-					this.params = target.getParams(h);
-					this.active=true;
-					this.fire("active",{
-						route: this.selected,
-						params: this.params,
-						target: target
-					});
-				}else if(this.active){
-					this.selected=null;
-					this.active=false;
-					this.fire("deactive");
-				}
-			}
-		},
-		ready:function(){
-			Polymer.dom(this.$.content).observeNodes(this.__observerContent.bind(this));
-			this.async(function(){
-				this.dispatch("ready",this);
-			},200);
-		},
-		__observerContent:function(e){
-			this.wait=true;
-			var eles = e.addedNodes.filter(function(node) {
-				return (node.nodeType === Node.ELEMENT_NODE)
-			});
-			this.wait=false;
-		}
-	
-	});
-	</script>
+  <template>
+    <style>
+      :host {
+        display: block;
+        height: 300px;
+      }
+    </style>
+    <iron-pages
+      selected="{{selected}}"
+      selected-attribute="active">
+      <slot></slot>
+    </iron-pages>
+  </template>
+
+  <script>
+    class lazyRouter extends Polymer.Element {
+      static get is() { return 'lazy-router'; }
+      static get properties() {
+        return {
+          render:{
+            type: Boolean,
+            value: false
+          },
+          route:{
+            type: Object
+          },
+          prefix:{
+            type: String,
+            value: "",
+            reflectToAttribute: true
+          },
+          selected:{
+            type: String
+          }
+        };
+      }
+      
+      static get observers(){
+        return [
+          "_bindRoute(route.path, render)"
+        ]
+      }
+      
+      static getStateForAction(action, state) {
+        
+      }
+      
+      connectedCallback(){
+        super.connectedCallback();
+        if(this.render){
+          this.setPrefix("").then(function(){
+            console.log(123);
+          })
+        }
+      }
+      
+      setPrefix(prefix){
+        this.prefix = prefix;
+        var that = this;
+        var routes = Array.from(that.querySelectorAll(":scope > lazy-route"));        
+        return new Promise(function(resolve){
+          that.render = false;
+          Promise.all(routes.map(function(node){
+            return node.setPrefix(prefix);
+          })).then(function(){
+            that.prefix = prefix;
+            that.render = true;
+            resolve();
+          });
+        })
+      }
+      
+      _bindRoute(path, render){
+        if(path==="undefined" || !render){
+          return;
+        }
+        console.log("bindrouter");
+        var routes = Array.from(this.querySelectorAll(":scope > lazy-route"));
+        var index = routes.findIndex(function(item) {
+          return item.match(path);
+        });
+        this.selected = index;
+      }
+      
+    }
+
+    window.customElements.define(lazyRouter.is, lazyRouter);
+  </script>
 </dom-module>
 
 
-<dom-module id="lazy-route">
-	<template>
-	</template>
-	<script>
-		Polymer({
-			is: "lazy-route",
-			behaviors:[
-				lazyRouterReduxBehavior
-			],
-			properties:{
-				active:{
-					type: Boolean,
-					reflectToAttribute: true,
-					observer:"__activeChanged"
-				},
-				route:{
-					type: String
-				},
-				routeRegex:{
-					type: RegExp,
-					computed:"__bindRegExp(route)"
-				},
-				parameters:{
-					type: Object,
-					computed:"__bindParam(route)"
-				}
-			},
-			actions:{
-				setActive:function(route,active){
-					return {
-						type: "ROUTE_ACTIVE",
-						active: active
-					}
-				}
-			},
-			__activeChanged:function(active){
-				if(active){
-					this.dispatch("setActive",this.route,active);
-				}else{
-					//如果是取消的狀態，稍微慢一點在儲存進去
-					this.async(function(){
-						this.dispatch("setActive",this.route,active);
-					},20);
-				}
-			},
-			__bindRegExp:function(route){
-				route += "$";
-				return new RegExp(route.replace(/:[\w]*/g, "([\\w]*)"));
-			},
-			__bindParam:function(route){
-				var result = [];
-				var arr = route.match(/:(\w*)/g);
-				if(arr!=null){
-					result = route.match(/:\w*/g).map(function(item){
-						return item.replace(":", "");
-					});
-				}
-				return result;
-			},
-			getParams:function(hash){
-				var arr = hash.match(this.routeRegex);
-				var that = this;
-				var result = {};
-				if(that.parameters.length==arr.length-1){						
-					that.parameters.forEach(function(key,i){
-						result[key]=arr[arr.index+parseInt(i)];
-					});
-				}
-				return result;
-			}
-		})
-	</script>
-</dom-module>

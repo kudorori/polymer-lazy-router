@@ -1,0 +1,70 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../../app-route/app-location.html"/>
+<dom-module id="demo-app">
+  <template>
+    <app-location route="{{route}}" use-hash-as-path></app-location>
+    <lazy-router route="[[route]]" render>
+      <lazy-route pattern="/home" component="demo-element">
+        <lazy-router route="[[route]]">
+          <lazy-route pattern="/page1/:id/:id2" component="demo-element">
+            <lazy-router route="[[route]]">
+              <lazy-route pattern="/p1" component="demo-element"></lazy-route>
+            </lazy-router>
+          </lazy-route>
+        </lazy-router>
+      </lazy-route>
+    </lazy-router>
+  </template>
+  <script>
+    class app extends Polymer.Element{
+      static get is() { return "demo-app"}
+      static get properties() {
+        return {
+          route:{
+            type: Object,
+            observer: "_routeChanged"
+          }
+        }
+      }
+      _routeChanged(r){
+        console.log(r);
+      }
+      constructor(){
+        super();
+        console.log("create");
+      }
+      connectedCallback(){
+        super.connectedCallback();
+        console.log("connect");
+      }
+      disconnectedCallback(){
+        super.disconnectedCallback();
+        console.log("disconnect");
+      }
+    }
+    window.customElements.define(app.is, app);
+  </script>
+</dom-module>
+<dom-module id="demo-element">
+  <template>
+    <slot></slot>
+  </template>
+  <script>
+    class demoElement extends Polymer.Element{
+      static get is() { return "demo-element"}
+      constructor(){
+        super();
+        console.log("create");
+      }
+      connectedCallback(){
+        super.connectedCallback();
+        console.log("connect");
+      }
+      disconnectedCallback(){
+        super.disconnectedCallback();
+        console.log("disconnect");
+      }
+    }
+    window.customElements.define(demoElement.is, demoElement);
+  </script>
+</dom-module>
