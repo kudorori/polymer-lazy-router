@@ -1,0 +1,71 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="./lazy-route.html">
+<link rel="import" href="../iron-pages/iron-pages.html">
+
+<!--
+`lazy-router`
+
+
+@demo demo/index.html
+-->
+
+<dom-module id="lazy-router-navigator">
+  <template>
+    
+  </template>
+
+  <script>
+    class lazyRouterNavigator extends lazyRouterReduxMixin(Polymer.Element) {
+      static get is() { return 'lazy-router-navigator'; }
+      static get properties() {
+        return {
+          route:{
+            type: Object,
+            observer: "_routeChanged"
+          },
+          config:{
+            type: Object,
+            observer: "_configChanged"
+          }
+        };
+      }
+      
+      static get observers(){
+        return [
+          
+        ]
+      }
+      
+      static get actions(){
+        return {
+          config:function(opts){
+            return {
+              type: "SET_CONFIG",
+              value: opts
+            }
+          },
+          route: function(route){
+            return {
+              type: "SET_ROUTE",
+              value: route
+            }
+          }
+        }
+      }
+      
+      
+      _configChanged(opts){
+        this.dispatch("config", opts);
+      }
+      
+      _routeChanged(route){
+        this.dispatch("route", route);
+      }
+      
+    }
+
+    window.customElements.define(lazyRouterNavigator.is, lazyRouterNavigator);
+  </script>
+</dom-module>
+
+

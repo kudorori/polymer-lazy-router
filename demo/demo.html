@@ -3,9 +3,10 @@
 <dom-module id="demo-app">
   <template>
     <app-location route="{{route}}" use-hash-as-path></app-location>
-    <lazy-router route="[[route]]" render>
+    <lazy-router-navigator route="[[route]]" config="[[config]]"></lazy-router-navigator>
+    <lazy-router render>
       <lazy-route pattern="/home" component="demo-element">
-        <lazy-router route="[[route]]">
+        <lazy-router>
           <lazy-route pattern="/page1/:id/:id2" component="demo-element">
             <lazy-router route="[[route]]">
               <lazy-route pattern="/p1" component="demo-element"></lazy-route>
@@ -23,6 +24,12 @@
           route:{
             type: Object,
             observer: "_routeChanged"
+          },
+          config:{
+            type: Object,
+            value: {
+              src: "./"
+            }
           }
         }
       }
@@ -45,26 +52,4 @@
     window.customElements.define(app.is, app);
   </script>
 </dom-module>
-<dom-module id="demo-element">
-  <template>
-    <slot></slot>
-  </template>
-  <script>
-    class demoElement extends Polymer.Element{
-      static get is() { return "demo-element"}
-      constructor(){
-        super();
-        console.log("create");
-      }
-      connectedCallback(){
-        super.connectedCallback();
-        console.log("connect");
-      }
-      disconnectedCallback(){
-        super.disconnectedCallback();
-        console.log("disconnect");
-      }
-    }
-    window.customElements.define(demoElement.is, demoElement);
-  </script>
-</dom-module>
+

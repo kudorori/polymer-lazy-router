@@ -1,0 +1,32 @@
+<script type="text/javascript" src="./node_modules/redux/dist/redux.js"></script>
+<link rel="import" href="../polymer-redux/polymer-redux.html"/>
+<script>
+  const lazyRouterReduxMixin = PolymerRedux(Redux.createStore(function(state, action){
+    if(state == undefined){
+      return {
+        route:{
+          path: "/"
+        },
+        config:{
+          src: "/"
+        }
+      };
+    }
+    
+    switch(action.type){
+      case "SET_CONFIG":{
+        state = Object.assign({},state,{
+          config: action.value
+        })
+        break;
+      }
+      case "SET_ROUTE":{
+        state = Object.assign({},state,{
+          route: action.value
+        })
+        break;
+      }
+    }
+    return state;
+  }));
+</script>

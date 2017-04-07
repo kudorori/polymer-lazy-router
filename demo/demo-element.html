@@ -1,0 +1,23 @@
+<dom-module id="demo-element">
+  <template>
+    <slot></slot>
+  </template>
+  <script>
+    class demoElement extends Polymer.Element{
+      static get is() { return "demo-element"}
+      constructor(){
+        super();
+        console.log("create");
+      }
+      connectedCallback(){
+        super.connectedCallback();
+        console.log("connect");
+      }
+      disconnectedCallback(){
+        super.disconnectedCallback();
+        console.log("disconnect");
+      }
+    }
+    window.customElements.define(demoElement.is, demoElement);
+  </script>
+</dom-module>

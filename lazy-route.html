@@ -1,3 +1,4 @@
+<link rel="import" href="./lazy-router-redux.html">
 <dom-module id="lazy-route">
   <template>
     <style>
@@ -10,7 +11,7 @@
   </template>
     
   <script>
-    class lazyRoute extends Polymer.Element {
+    class lazyRoute extends lazyRouterReduxMixin(Polymer.Element) {
       static get is(){ return 'lazy-route' }
       
       static get properties() {
@@ -33,6 +34,9 @@
           },
           _component:{
             type: Object
+          },
+          _config:{
+            statePath: "config"
           }
         };
       }
@@ -54,6 +58,12 @@
       _activeChanged(act){
         if(this.component != undefined){
           if(act){
+            var href = [this.component,"html"].join(".");
+            Polymer.importHref(this._config.src + href,() => {
+              console.log(this.component,"import success");
+            }, () => {
+              console.log(this.component,"import error");
+            });
             this.root.appendChild(this._component);
           }else{
             this.root.removeChild(this._component);
