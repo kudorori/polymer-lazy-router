@@ -2,6 +2,7 @@
 <link rel="import" href="./lazy-route.html">
 <link rel="import" href="../iron-pages/iron-pages.html">
 <link rel="import" href="./lazy-router-redux.html">
+<link rel="import" href="./lazy-router-mixin.html">
 
 <!--
 `lazy-router`
@@ -14,11 +15,12 @@
   <template>
     <style>
       :host {
-        display: block;
-        height: 300px;
+/*         display: block; */
+/*         height: 300px; */
       }
     </style>
     <iron-pages
+      id="pages"
       selected="{{selected}}"
       selected-attribute="active">
       <slot></slot>
@@ -30,9 +32,13 @@
       static get is() { return 'lazy-router'; }
       static get properties() {
         return {
+          importSrc:{
+            type: String,
+            value: ""
+          },
           render:{
             type: Boolean,
-            value: false
+            statePath: "render"
           },
           route:{
             type: Object,
@@ -46,6 +52,14 @@
           },
           selected:{
             type: String
+          },
+          config:{
+            type: Object,
+            statePath: "config"
+          },
+          isRoot:{
+            type: Boolean,
+            value: false
           }
         };
       }
@@ -60,8 +74,14 @@
         return {
           config:function(opts){
             return {
-              action: "SET_CONFIG",
+              type: "SET_CONFIG",
               value: opts
+            }
+          },
+          render: function(bool) {
+            return {
+              type: "SET_RENDER",
+              value: bool
             }
           }
         }
@@ -69,9 +89,10 @@
       
       connectedCallback(){
         super.connectedCallback();
-        if(this.render){
-          this.setPrefix("").then(function(){
-            console.log(123);
+        if(this.isRoot){
+          this.dispatch("render", false);
+          this.setPrefix("").then(() => {
+            this.dispatch("render", true);
           })
         }
       }
@@ -80,13 +101,11 @@
         this.prefix = prefix;
         var that = this;
         var routes = Array.from(that.querySelectorAll(":scope > lazy-route"));        
-        return new Promise(function(resolve){
-          that.render = false;
-          Promise.all(routes.map(function(node){
+        return new Promise((resolve) => {
+          Promise.all(routes.map((node) => {
             return node.setPrefix(prefix);
-          })).then(function(){
+          })).then(() => {
             that.prefix = prefix;
-            that.render = true;
             resolve();
           });
         })
@@ -96,15 +115,81 @@
         if(path==="undefined" || !render){
           return;
         }
-        console.log("bindrouter");
-        var routes = Array.from(this.querySelectorAll(":scope > lazy-route"));
-        var index = routes.findIndex(function(item) {
-          return item.match(path);
+        this._tryOldComponent().then(() => {
+          var routes = Array.from(this.querySelectorAll(":scope > lazy-route"));
+        
+          var index = routes.findIndex(function(item) {
+            return item.match(path);
+          });
+          
+          if(index > -1) {
+            var route = routes[index];
+            var href = [this.config.src, this.importSrc, route.component + ".html"].join("");
+            if(route._component instanceof Polymer.Element){
+              this.selected = index;
+              this._tryNowComponent();
+            }else{
+              Polymer.importHref(href, () => {
+                this.selected = index;
+                this._tryNowComponent();
+              }, () => {
+                this.selected = index;
+                this._tryNowComponent();
+              });
+            }
+          }
+        }).catch((err) => {
+          throw err;
         });
-        this.selected = index;
+      }
+      /*
+      * 測試當下執行的Component是否有onActive Method
+      * 有的話則執行，並等待Promise結果
+      */
+      _tryNowComponent(){
+        return new Promise((resolve, reject) => {
+          var route = this.$.pages.selectedItem;
+          if(route === undefined){
+            resolve();
+          }else{
+            var component = route._component;
+            if(component.onActive===undefined){
+              resolve();
+            }else{
+              component.onActive().then(() => {
+                resolve()
+              }).catch((err) => {
+                reject(err);
+              })
+            }
+            
+          }
+        })
       }
       
-      
+      /*
+      * 測試上一個Component是否有offActive Method
+      * 有的話則執行，並等待Promise結果
+      */
+      _tryOldComponent(){
+        return new Promise((resolve, reject) => {
+          var route = this.$.pages.selectedItem;
+          if(route === undefined){
+            resolve();
+          }else{
+            var component = route._component;     
+            if(component.offActive === undefined){
+              resolve();
+            }else{
+              component.offActive().then(() => {
+                resolve()
+              }).catch((err) => {
+                reject(err);
+              })
+            }
+          }
+        })
+      }
     }
 
     window.customElements.define(lazyRouter.is, lazyRouter);

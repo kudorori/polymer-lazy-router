@@ -3,7 +3,7 @@
     <slot></slot>
   </template>
   <script>
-    class demoElement extends Polymer.Element{
+    class demoElement extends lazyRouteComponentMixin(Polymer.Element){
       static get is() { return "demo-element"}
       constructor(){
         super();
@@ -17,7 +17,54 @@
         super.disconnectedCallback();
         console.log("disconnect");
       }
+      onActive(){
+        return new Promise((resolve)=>{
+//           console.log("onActive");
+          resolve();
+        })
+      }
     }
     window.customElements.define(demoElement.is, demoElement);
+  </script>
+</dom-module>
+
+<dom-module id="demo-dialog">
+  <template>
+    23442 Dialog
+  </template>
+  <script>
+    class demoDialog extends lazyRouteDialogComponentMixin(Polymer.Element){
+      static get is() { return "demo-dialog"}
+      static get properties() {
+        return {
+          withBackdrop:{
+            type: Boolean,
+            value: true
+          }
+        }
+      }
+      constructor(){
+        super();
+        console.log("create");
+      }
+      connectedCallback(){
+        super.connectedCallback();
+        console.log("connect");
+      }
+      disconnectedCallback(){
+        super.disconnectedCallback();
+        console.log("disconnect");
+      }
+      ready(){
+        super.ready();
+      }
+      
+      onActive(){
+        console.log("child on active");
+        return super.onActive();
+      }
+      
+    }
+    window.customElements.define(demoDialog.is, demoDialog);
   </script>
 </dom-module>

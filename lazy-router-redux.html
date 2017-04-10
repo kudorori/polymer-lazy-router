@@ -9,7 +9,8 @@
         },
         config:{
           src: "/"
-        }
+        },
+        render: false
       };
     }
     
@@ -25,6 +26,11 @@
           route: action.value
         })
         break;
+      }
+      case "SET_RENDER":{
+        state = Object.assign({}, state, {
+          render: action.value
+        })
       }
     }
     return state;

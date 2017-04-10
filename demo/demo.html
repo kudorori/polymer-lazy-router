@@ -4,10 +4,10 @@
   <template>
     <app-location route="{{route}}" use-hash-as-path></app-location>
     <lazy-router-navigator route="[[route]]" config="[[config]]"></lazy-router-navigator>
-    <lazy-router render>
+    <lazy-router is-root>
       <lazy-route pattern="/home" component="demo-element">
         <lazy-router>
-          <lazy-route pattern="/page1/:id/:id2" component="demo-element">
+          <lazy-route pattern="/page1" component="demo-dialog">
             <lazy-router route="[[route]]">
               <lazy-route pattern="/p1" component="demo-element"></lazy-route>
             </lazy-router>
