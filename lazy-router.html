@@ -147,7 +147,7 @@
 
           if(index > -1) {
             var route = routes[index];
-            var href = this.resolveUrl([this.config.src, this.importSrc, route.component + ".html"].join(""));
+            var href = [this.config.src, this.importSrc, route.component + ".html"].join("");
             if(route._component instanceof Polymer.Element){
               this.selected = index;
               this._tryNowComponent();
