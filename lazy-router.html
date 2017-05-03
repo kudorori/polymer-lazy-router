@@ -1,6 +1,8 @@
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../polymer/polymer-element.html">
+<link rel="import" href="../iron-selector/iron-selectable.html">
 <link rel="import" href="./lazy-route.html">
-<link rel="import" href="../iron-pages/iron-pages.html">
+<!-- <link rel="import" href="../iron-pages/iron-pages.html"> -->
 <link rel="import" href="./lazy-router-redux.html">
 <link rel="import" href="./lazy-router-mixin.html">
 
@@ -18,17 +20,23 @@
 /*         display: block; */
 /*         height: 300px; */
       }
+      :host {
+        display: block;
+      }
+
+      :host > ::content > :not(.iron-selected) {
+        display: none !important;
+      }
+
+      :host > ::slotted(:not(.iron-selected)) {
+        display: none !important;
+      }
     </style>
-    <iron-pages
-      id="pages"
-      selected="{{selected}}"
-      selected-attribute="active">
-      <slot></slot>
-    </iron-pages>
+    <slot></slot>
   </template>
 
   <script>
-    class lazyRouter extends lazyRouterReduxMixin(Polymer.Element) {
+    class lazyRouter extends lazyRouterReduxMixin(Polymer.mixinBehaviors([Polymer.IronSelectableBehavior, Polymer.IronResizableBehavior], Polymer.Element)) {
       static get is() { return 'lazy-router'; }
       static get properties() {
         return {
@@ -50,9 +58,6 @@
             value: "",
             reflectToAttribute: true
           },
-          selected:{
-            type: String
-          },
           config:{
             type: Object,
             statePath: "config"
@@ -60,16 +65,28 @@
           isRoot:{
             type: Boolean,
             value: false
+          },
+          activateEvent: {
+            type: String,
+            value: null
+          },
+          selected:{
+            reflectToAttribute: true
+          },
+          selectedAttribute:{
+            type: String,
+            value: "active"
           }
         };
       }
-      
+
       static get observers(){
         return [
-          "_bindRoute(route.path, render)"
+          "_bindRoute(route.path, render)",
+          "_selectedPageChanged(selected)"
         ]
       }
-      
+
       static get actions(){
         return {
           config:function(opts){
@@ -86,7 +103,13 @@
           }
         }
       }
-      
+
+      _selectedPageChanged(){
+        setTimeout(() => {
+          this.notifyResize();
+        },1);
+      }
+
       connectedCallback(){
         super.connectedCallback();
         if(this.isRoot){
@@ -96,11 +119,11 @@
           })
         }
       }
-      
+
       setPrefix(prefix){
         this.prefix = prefix;
         var that = this;
-        var routes = Array.from(that.querySelectorAll(":scope > lazy-route"));        
+        var routes = Array.from(that.querySelectorAll(":scope > lazy-route"));
         return new Promise((resolve) => {
           Promise.all(routes.map((node) => {
             return node.setPrefix(prefix);
@@ -110,32 +133,37 @@
           });
         })
       }
-      
+
       _bindRoute(path, render){
         if(path==="undefined" || !render){
           return;
         }
         this._tryOldComponent().then(() => {
           var routes = Array.from(this.querySelectorAll(":scope > lazy-route"));
-        
+
           var index = routes.findIndex(function(item) {
             return item.match(path);
           });
-          
+
           if(index > -1) {
             var route = routes[index];
-            var href = [this.config.src, this.importSrc, route.component + ".html"].join("");
+            var href = this.resolveUrl([this.config.src, this.importSrc, route.component + ".html"].join(""));
             if(route._component instanceof Polymer.Element){
               this.selected = index;
               this._tryNowComponent();
             }else{
-              Polymer.importHref(href, () => {
-                this.selected = index;
-                this._tryNowComponent();
-              }, () => {
-                this.selected = index;
-                this._tryNowComponent();
-              });
+              setTimeout(() => {
+                Polymer.importHref(href, () => {
+                  console.log(href, "import success");
+                  this.selected = index;
+                  this._tryNowComponent();
+
+                }, (err) => {
+                  console.log(href, "import error",err);
+                  this.selected = index;
+                  this._tryNowComponent();
+                }, true);
+              }, 1);
             }
           }
         }).catch((err) => {
@@ -148,7 +176,7 @@
       */
       _tryNowComponent(){
         return new Promise((resolve, reject) => {
-          var route = this.$.pages.selectedItem;
+          var route = this.selectedItem;
           if(route === undefined){
             resolve();
           }else{
@@ -162,22 +190,22 @@
                 reject(err);
               })
             }
-            
+
           }
         })
       }
-      
+
       /*
       * 測試上一個Component是否有offActive Method
       * 有的話則執行，並等待Promise結果
       */
       _tryOldComponent(){
         return new Promise((resolve, reject) => {
-          var route = this.$.pages.selectedItem;
+          var route = this.selectedItem;
           if(route === undefined){
             resolve();
           }else{
-            var component = route._component;     
+            var component = route._component;
             if(component.offActive === undefined){
               resolve();
             }else{
@@ -195,5 +223,3 @@
     window.customElements.define(lazyRouter.is, lazyRouter);
   </script>
 </dom-module>
-
-

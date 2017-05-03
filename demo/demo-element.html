@@ -1,5 +1,6 @@
 <dom-module id="demo-element">
   <template>
+    DEMO
     <slot></slot>
   </template>
   <script>
@@ -58,12 +59,12 @@
       ready(){
         super.ready();
       }
-      
+
       onActive(){
         console.log("child on active");
         return super.onActive();
       }
-      
+
     }
     window.customElements.define(demoDialog.is, demoDialog);
   </script>

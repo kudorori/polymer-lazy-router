@@ -1,5 +1,6 @@
 <link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../../app-route/app-location.html"/>
+<!-- <link rel="import" href="demo-element.html"/> -->
 <dom-module id="demo-app">
   <template>
     <app-location route="{{route}}" use-hash-as-path></app-location>
@@ -17,7 +18,7 @@
     </lazy-router>
   </template>
   <script>
-    class app extends Polymer.Element{
+    class app extends lazyRouteComponentMixin(Polymer.Element){
       static get is() { return "demo-app"}
       static get properties() {
         return {
@@ -28,7 +29,7 @@
           config:{
             type: Object,
             value: {
-              src: "./"
+              src: "./demo/"
             }
           }
         }
@@ -52,4 +53,3 @@
     window.customElements.define(app.is, app);
   </script>
 </dom-module>
-

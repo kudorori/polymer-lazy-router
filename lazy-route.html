@@ -6,14 +6,14 @@
         display: block;
       }
     </style>
-    
+
     <slot id="_slot"></slot>
   </template>
-    
+
   <script>
     class lazyRoute extends lazyRouterReduxMixin(Polymer.Element) {
       static get is(){ return 'lazy-route' }
-      
+
       static get properties() {
         return {
           prefix:{
@@ -45,17 +45,18 @@
 //           "_renderRouter(prefix, pattern)"
         ];
       }
-      
+
       connectedCallback(){
         super.connectedCallback();
       }
-      
+
       _componentChanged(str){
         this._component = document.createElement(str);
         this._component.appendChild(this.$._slot);
       }
-      
+
       _activeChanged(act){
+        
         if(this.component != undefined){
           if(act){
             this.root.appendChild(this._component);
@@ -64,11 +65,11 @@
           }
         }
       }
-      
+
       _patternToMatchRegex(pattern){
         return new RegExp(pattern.replace(/:[\w]*/g, "([\\w]*)"));
       }
-      
+
       _patternToParameters(pattern){
         var result = [];
 				var arr = pattern.match(/:(\w*)/g);
@@ -79,7 +80,7 @@
 				}
 				return result;
       }
-      
+
       setPrefix(prefix){
         var that = this;
         var pattern = this.pattern;
@@ -93,7 +94,7 @@
           })
         })
       }
-      
+
       match(path){
         var pattern = this.prefix+this.pattern;
         var reg = this._patternToMatchRegex(pattern);
@@ -113,9 +114,9 @@
         }
         return result;
       }
-      
-      
-      
+
+
+
     }
 
     window.customElements.define(lazyRoute.is, lazyRoute);
