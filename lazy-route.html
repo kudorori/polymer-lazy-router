@@ -56,12 +56,13 @@
       }
 
       _activeChanged(act){
-        
         if(this.component != undefined){
           if(act){
             this.root.appendChild(this._component);
           }else{
             this.root.removeChild(this._component);
+            this._component = document.createElement(this.component);
+            this._component.appendChild(this.$._slot);
           }
         }
       }
@@ -102,6 +103,7 @@
         if(result){
           var paramsValues = Array.from(path.match(reg)).slice(1);
           var paramsNames = this._patternToParameters(pattern);
+
           if(paramsNames.length == paramsValues.length){
             var params = {};
             paramsNames.forEach(function(name,index) {

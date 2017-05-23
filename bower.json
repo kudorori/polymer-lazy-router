@@ -3,10 +3,10 @@
   "main": "lazy-router.html",
   "dependencies": {
     "polymer": "Polymer/polymer#^2.0.0-rc.2",
-    "iron-pages": "2.0-preview",
-    "app-route": "PolymerElements/app-route#2.0-preview",
+    "iron-pages": "^2.0.0",
+    "app-route": "PolymerElements/app-route#^2.0.0",
     "polymer-redux": "polymer-2",
-    "iron-overlay-behavior": "PolymerElements/iron-overlay-behavior#2.0-preview"
+    "iron-overlay-behavior": "PolymerElements/iron-overlay-behavior#^2.0.0"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#2.0-preview",
