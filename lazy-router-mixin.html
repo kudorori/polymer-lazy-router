@@ -23,11 +23,11 @@
   const lazyRouteDialogComponentMixin = superClass => class extends Polymer.mixinBehaviors([Polymer.IronOverlayBehavior],lazyRouteComponentMixin(superClass)){
     constructor(){
       super();
-      this.parentNode.appendChild(this.backdropElement);
       this._overlayCanceled = this.__overlayCanceled.bind(this);
     }
     connectedCallback(){
       super.connectedCallback();
+      this.parentNode.appendChild(this.backdropElement);
       this.addEventListener("iron-overlay-canceled", this._overlayCanceled);
     }
 

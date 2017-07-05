@@ -5,7 +5,7 @@
     "polymer": "Polymer/polymer#^2.0.0-rc.2",
     "iron-pages": "^2.0.0",
     "app-route": "PolymerElements/app-route#^2.0.0",
-    "polymer-redux": "polymer-2",
+    "polymer-redux": "^1.0.1",
     "iron-overlay-behavior": "PolymerElements/iron-overlay-behavior#^2.0.0"
   },
   "devDependencies": {
